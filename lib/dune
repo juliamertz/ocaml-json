@@ -1,2 +1,4 @@
 (library
- (name json_parser))
+ (name json_parser)
+ (libraries base))
+ 
