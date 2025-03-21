@@ -1,4 +1,5 @@
 open Base
+open Token
 
 type t =
   { content : string
@@ -48,14 +49,7 @@ let read_string lexer =
     | Some ch -> loop (ch :: acc) (advance lexer)
   in
   let lexer, string = loop [] lexer in
-  lexer, Token.String (String.of_char_list (List.rev @@ string))
-;;
-
-(* TODO: Remove this when read_integer is cleaned up *)
-let is_number_opt ch =
-  match ch with
-  | Some ch -> is_number ch
-  | None -> false
+  lexer, String (String.of_char_list (List.rev @@ string))
 ;;
 
 (* This is a bit messy *)
@@ -63,13 +57,16 @@ let read_integer lexer =
   let rec loop acc lexer =
     match lexer.ch with
     | Some ch when is_number ch ->
-      if is_number_opt (peek_ch lexer)
+      if
+        match peek_ch lexer with
+        | Some ch -> is_number ch
+        | None -> false
       then loop (ch :: acc) (advance lexer)
       else lexer, ch :: acc
     | _ -> lexer, acc
   in
   let lexer, string = loop [] lexer in
-  lexer, Token.Integer (Stdlib.int_of_string @@ String.of_char_list (List.rev @@ string))
+  lexer, Integer (Stdlib.int_of_string @@ String.of_char_list (List.rev @@ string))
 ;;
 
 let read_token lexer =
@@ -78,7 +75,6 @@ let read_token lexer =
   | None -> lexer, None
   | Some ch ->
     let lexer, tok =
-      let open Token in
       match ch with
       | '{' -> lexer, LeftBrace
       | '}' -> lexer, RightBrace
@@ -91,4 +87,14 @@ let read_token lexer =
       | _ -> lexer, Illegal
     in
     lexer, Some tok
+;;
+
+let tokens_from_str str =
+  let lexer = init str in
+  let rec aux acc lexer =
+    match read_token lexer with
+    | lexer, Some token -> aux (token :: acc) (advance lexer)
+    | _, None -> List.rev acc
+  in
+  aux [] lexer
 ;;

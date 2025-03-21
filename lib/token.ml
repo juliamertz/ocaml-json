@@ -1,6 +1,6 @@
 type t =
   | Illegal
-  | Integer of int 
+  | Integer of int
   | String of string
   | LeftBrace
   | RightBrace
@@ -9,8 +9,8 @@ type t =
   | LeftBracket
   | RightBracket
 
-let to_str tok =
-  match tok with
+let to_str token =
+  match token with
   | Illegal -> "ILLEGAL"
   | String content -> "STRING @ \"" ^ content ^ "\""
   | Integer value -> "INTEGER @ " ^ Stdlib.string_of_int value
